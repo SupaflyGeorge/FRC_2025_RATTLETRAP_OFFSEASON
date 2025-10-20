@@ -1,0 +1,109 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Score Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ElevatorToL2"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PivotToDown"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ElevatorDownToBall"
+          }
+        },
+        {
+          "type": "wait",
+          "data": {
+            "waitTime": 0.2
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "New Path"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ElevatorDownWithIntake"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PivotToBall"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeIntakeCool"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PivotToUp"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Algae Path"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "Turn Boy"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "ElevatorToScore"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PivotToScore"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "AlgaeIntakeNotCool"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "PivotToUp"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": null,
+  "choreoAuto": false
+}
