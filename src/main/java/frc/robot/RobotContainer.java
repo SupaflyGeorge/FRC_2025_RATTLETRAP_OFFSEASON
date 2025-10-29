@@ -79,28 +79,17 @@ public class RobotContainer
   public static final CoralPivot coralPivot = new CoralPivot();
   
 
-  // Top limit switch (DIO 9). If you ever rewire, adjust rawTopPressed().
-  private final DigitalInput elevatorLimit = new DigitalInput(9); // DIO port
 
-  // Latch: when true, UP is blocked until the top switch is RELEASED
+=
   private boolean topLocked = false;
 
-  // Debounce (~50ms) to avoid chatter at the top switch
-  private final Debouncer topPressedDebounce  = new Debouncer(0.05, DebounceType.kRising);
-  private final Debouncer topReleasedDebounce = new Debouncer(0.05, DebounceType.kFalling);
 
-  // Replace with CommandPS4Controller or CommandJoystick if needed
+
+
   final         CommandXboxController driverXbox = new CommandXboxController(0);
   final         CommandXboxController operatorXbox = new CommandXboxController(1);
-  // The robot's subsystems and commands are defined here...
-  private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
-                                                                                "swerve/neo"));
 
-  // Example helpers available in your RobotContainer:
-private boolean isUpBlocked() { 
-  // Reuse your top lock / limit logic:
-  return topLocked || isTopPressed(); // <- whatever you already use to block UP
-}
+  private final SwerveSubsystem       drivebase  = new SwerveSubsystem(new File(Filesystem.getDeployDirectory(),
 
   /**
    * Converts driver input into a field-relative ChassisSpeeds that is controlled by angular velocity.
@@ -160,10 +149,6 @@ private boolean isUpBlocked() {
    */
   public RobotContainer()
   {
-    
-
-
-// Example: go down to L1 (= 0.00), run intake at +0.8, stop intake 1.0s after elevator reaches goal
 
 
 
@@ -184,9 +169,7 @@ NamedCommands.registerCommand(
   new AlgaeIntakeTimed(algaeIntake, 1.0, 1) // run intake at full speed for 5 seconds
 );
 
-    // after subsystems exist, in RobotContainer() constructor:
 
-    // ...
     NamedCommands.registerCommand(
       "ElevatorDownWithIntake",
       new ElevatorDownWithIntake(
@@ -383,7 +366,6 @@ Command elevatorDownPID =
     )
     .until(() -> elevator.atGoal());
 
-// Combine: if pivot not safe, raise it first; else go straight down
 Command ySequence =
   edu.wpi.first.wpilibj2.command.Commands.sequence(
     edu.wpi.first.wpilibj2.command.Commands.either(
@@ -400,36 +382,9 @@ driverXbox.y().onTrue(ySequence);
 
 
 
-    
 
     // =========================
-    // ELEVATOR MANUAL CONTROL + TOP LIMIT LATCH (PRESS to latch, RELEASE to clear)
-    // =========================
-
-    // A) Latch & STOP when the top limit is PRESSED (debounced)
-    new Trigger(this::topPressedDebounced).onTrue(
-      Commands.runOnce(() -> {
-        topLocked = true;
-        elevator.stop();
-        System.out.println("[Elevator] TOP LIMIT PRESSED -> latched & stopped");
-      }, elevator)
-    );
-
-    // B) CLEAR the latch when the top limit is RELEASED (debounced)
-    new Trigger(this::topReleasedDebounced).onTrue(
-      Commands.runOnce(() -> {
-        if (topLocked) {
-          topLocked = false;
-          System.out.println("[Elevator] Top latch CLEARED (switch released)");
-        }
-      })
-    );
-
-    
-    // release = stop
-
-    // =========================
-    // DRIVETRAIN BINDS (unchanged)
+    // DRIVETRAIN BINDS 
     // =========================  
 
     Command driveFieldOrientedDirectAngle      = drivebase.driveFieldOriented(driveDirectAngle);
