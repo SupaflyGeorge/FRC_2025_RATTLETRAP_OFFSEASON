@@ -24,23 +24,20 @@ public class Elevator extends SubsystemBase {
   private final SparkMax leftElevator  = new SparkMax(9,  MotorType.kBrushless);
   private final SparkMax rightElevator = new SparkMax(10, MotorType.kBrushless);
 
-  // (kept for debug)
   private final RelativeEncoder armRightMotorEncoder = leftElevator.getEncoder();
   private final RelativeEncoder armLeftMotorEncoder  = rightElevator.getEncoder();
 
-  // === EDIT THESE TO MATCH YOUR ROBOT ===
+  // 
   private static final int    CANCODER_ID          = 15;      // your CANcoder ID
   private static final double DRUM_DIAMETER_METERS = 0.0381;  // e.g. 1.5 in OD
   private static final boolean UP_IS_POSITIVE      = true;    // flip if needed
 
-  // Soft limits (meters)
+  // Soft limits
   private final double bottomMeters = 0.0;
   private final double topMeters    = 0.627;   // put your real max
 
-  // Absolute sensor
   private final CANcoder shaftEncoder = new CANcoder(CANCODER_ID);
 
-  // ***** Closed-loop only for setpoints *****
   private static final TrapezoidProfile.Constraints kConstraints =
       new TrapezoidProfile.Constraints(1.6, 3.0);  // tune
   private final ProfiledPIDController pid =
@@ -49,15 +46,12 @@ public class Elevator extends SubsystemBase {
   private boolean closedLoopEnabled = false;
   private double goalMeters = bottomMeters;
 
-  // ===== Ramp control =====
-  /** Seconds from 0→100% output; 0 disables (instant). */
   private double rampSeconds = 0.15;
 
-  /** Software ramp (extra smoothing on top of REV firmware ramp). */
   private SlewRateLimiter slew = new SlewRateLimiter(Double.POSITIVE_INFINITY);
 
   public Elevator() {
-    // Sensor setup
+  
     shaftEncoder.getConfigurator().apply(new CANcoderConfiguration());
 
     // Reset debug encoders
@@ -81,10 +75,9 @@ public class Elevator extends SubsystemBase {
     pid.setGoal(goalMeters);
   }
 
-  // ---- Conversions ----
+  
   private static double metersPerRev() { return Math.PI * DRUM_DIAMETER_METERS; }
 
-  // ---- Sensors ----
   public double getPosition() {
     double revs = shaftEncoder.getPosition().getValueAsDouble();
     double meters = revs * metersPerRev();
@@ -97,8 +90,6 @@ public class Elevator extends SubsystemBase {
     return UP_IS_POSITIVE ? mps : -mps;
   }
 
-  // ---- Actuation ----
-  /** Core motor setter with deadband, soft limits, and ramp. */
   private void setPercent(double speed) {
     // deadband
     if (Math.abs(speed) < 0.03) speed = 0.0;
@@ -118,12 +109,10 @@ public class Elevator extends SubsystemBase {
     rightElevator.set(smoothed);
   }
 
-  /** Public manual set (open-loop). */
   public void set(double speed) { setPercent(speed); }
 
   public void stop() { leftElevator.set(0); rightElevator.set(0); }
 
-  // ---- Setpoints / Modes ----
   public void setGoal(double meters) {
     goalMeters = Math.max(bottomMeters, Math.min(topMeters, meters));
     pid.setGoal(goalMeters);
@@ -135,11 +124,6 @@ public class Elevator extends SubsystemBase {
   public double getTopMeters()    { return topMeters; }
   public double getBottomMeters() { return bottomMeters; }
 
-  // ---- Ramp controls (REV 2025 API + software slew) ----
-  /**
-   * Change how “soft” the throttle is.
-   * @param seconds time to ramp from 0 → 100% output. 0 = instant.
-   */
   public void setRampSeconds(double seconds) {
     rampSeconds = Math.max(0.0, seconds);
     applyRampToSparks();
@@ -150,7 +134,7 @@ public class Elevator extends SubsystemBase {
 
   public double getRampSeconds() { return rampSeconds; }
 
-  /** Push ramp to both Spark MAXes using the new config API. */
+
   private void applyRampToSparks() {
     try {
       SparkMaxConfig cfg = new SparkMaxConfig();
@@ -158,7 +142,7 @@ public class Elevator extends SubsystemBase {
       // If you later drive the Sparks in closed-loop, also set:
       // cfg.closedLoopRampRate(rampSeconds);
 
-      // Apply to both motors (blocking apply; pass nulls for default timeout/persist)
+  
       leftElevator.configure(cfg, null, null);
       rightElevator.configure(cfg, null, null);
     } catch (Exception e) {
@@ -167,18 +151,17 @@ public class Elevator extends SubsystemBase {
 
   }
   public boolean atGoal() {
-    // true when PID is enabled and within tolerance
+
     return closedLoopEnabled && pid.atGoal();
   }
   
 
-  // ---- Main loop ----
   @Override
   public void periodic() {
 
 
     
-    if (!closedLoopEnabled) return; // manual mode leaves motors alone
+    if (!closedLoopEnabled) return; 
 
     double output = pid.calculate(getPosition());
     output = MathUtil.clamp(output, -1.0, 1.0);
